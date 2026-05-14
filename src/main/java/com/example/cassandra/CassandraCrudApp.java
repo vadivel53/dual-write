@@ -9,16 +9,13 @@ import java.util.UUID;
 
 public class CassandraCrudApp {
 
-    private static final String CONTACT_POINT_1 = "127.0.0.1";
-    private static final String CONTACT_POINT_2 = "127.0.0.2";
-    private static final String CONTACT_POINT_3 = "127.0.0.3";
+    private static final String CONTACT_POINT = env("CASSANDRA_CONTACT_POINT", "127.0.0.1");
+    private static final int PORT = Integer.parseInt(env("CASSANDRA_PORT", "9042"));
 
-    private static final int PORT = 9042;
+    private static final String USERNAME = env("CASSANDRA_USERNAME", "cassandra");
+    private static final String PASSWORD = env("CASSANDRA_PASSWORD", "cassandra");
 
-    private static final String USERNAME = "CHANGE_ME";
-    private static final String PASSWORD = "CHANGE_ME";
-
-    private static final String LOCAL_DATACENTER = "datacenter1";
+    private static final String LOCAL_DATACENTER = env("CASSANDRA_LOCAL_DATACENTER", "datacenter1");
 
     private static final String KEYSPACE = "demo_keyspace";
     private static final String TABLE = "users";
@@ -26,9 +23,7 @@ public class CassandraCrudApp {
     public static void main(String[] args) {
 
         try (CqlSession session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(CONTACT_POINT_1, PORT))
-                .addContactPoint(new InetSocketAddress(CONTACT_POINT_2, PORT))
-                .addContactPoint(new InetSocketAddress(CONTACT_POINT_3, PORT))
+                .addContactPoint(new InetSocketAddress(CONTACT_POINT, PORT))
                 .withLocalDatacenter(LOCAL_DATACENTER)
                 .withAuthCredentials(USERNAME, PASSWORD)
                 .build()) {
@@ -51,6 +46,11 @@ public class CassandraCrudApp {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static String env(String name, String defaultValue) {
+        String value = System.getenv(name);
+        return value == null || value.isBlank() ? defaultValue : value;
     }
 
     private static void createKeyspace(CqlSession session) {
